@@ -1,7 +1,15 @@
 #!/usr/bin/env node
 
+import semver from 'semver'
 import { build, context } from 'esbuild'
-import pkg from '../package.json' assert { type: 'json' }
+
+const pkg = await import('../package.json', 
+  (semver.gt(process.version, '20.10.0') ? {
+    with: { type: 'json' } // 'assert' is deprecated in Node 22
+  } : {
+    assert: { type: 'json' }
+  })
+)
 
 const common = {
   bundle: true,

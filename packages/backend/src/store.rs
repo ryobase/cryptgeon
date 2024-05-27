@@ -5,7 +5,7 @@ use crate::note::now;
 use crate::note::Note;
 
 lazy_static! {
-    static ref REDIS_CLIENT: String = std::env::var("REDIS")
+    pub static ref REDIS_CLIENT: String = std::env::var("REDIS")
         .unwrap_or("redis://127.0.0.1/".to_string())
         .parse()
         .unwrap();

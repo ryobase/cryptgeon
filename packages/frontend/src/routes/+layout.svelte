@@ -8,9 +8,12 @@
 	import { init as initStores, status } from '$lib/stores/status'
 	import Footer from '$lib/views/Footer.svelte'
 	import Header from '$lib/views/Header.svelte'
+	import { API } from '@cryptgeon/shared'
+	import { PUBLIC_PREFIX_ROUTE } from '$env/static/public';
 
 	onMount(() => {
-		initStores()
+		const api = new API('', PUBLIC_PREFIX_ROUTE ?? '')
+		initStores(api)
 	})
 </script>
 

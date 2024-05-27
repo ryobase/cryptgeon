@@ -29,18 +29,32 @@ type CallOptions = {
   body?: any
 }
 
-export class PayloadToLargeError extends Error {}
+export class PayloadToLargeError extends Error { }
 
-export let BASE = ''
+export class API {
+  private readonly _baseURL: string
+  private readonly _prefix: string
 
-export function setBase(url: string) {
-  BASE = url
+  constructor(baseURL = '', prefix = '') {
+    this._baseURL = baseURL
+
+    prefix = prefix.startsWith('/') ? prefix.substring(1, prefix.length) : prefix
+    prefix = prefix.endsWith('/') ? prefix.substring(0, prefix.length - 1) : prefix
+    this._prefix = `/${(prefix.length > 0 ? `${prefix}/` : '')}api`
+  }
+
+  get baseURL() { return this._baseURL }
+  get prefix() { return this._prefix }
 }
 
-export async function call(options: CallOptions) {
-  const response = await fetch(BASE + '/api/' + options.url, {
+export const BASE = process.env.SERVICE_URL ?? ''
+
+export async function call(api: API, options: CallOptions) {
+  const requestURL = api.baseURL + `${api.prefix}/${options.url}`
+
+  const response = await fetch(requestURL, {
     method: options.method,
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    body: !!!options.body ? options.body : JSON.stringify(options.body),
     mode: 'cors',
     headers: {
       'Content-Type': 'application/json',
@@ -51,25 +65,28 @@ export async function call(options: CallOptions) {
     if (response.status === 413) throw new PayloadToLargeError()
     else throw new Error('API call failed')
   }
+
   return response.json()
 }
 
-export async function create(note: Note) {
+export async function create(note: Note, api: API) {
   const { meta, ...rest } = note
   const body: NoteCreate = {
     ...rest,
     meta: JSON.stringify(meta),
   }
-  const data = await call({
+
+  const data = await call(api, {
     url: 'notes/',
     method: 'post',
     body,
   })
+
   return data as { id: string }
 }
 
-export async function get(id: string): Promise<NotePublic> {
-  const data = await call({
+export async function get(id: string, api: API): Promise<NotePublic> {
+  const data = await call(api, {
     url: `notes/${id}`,
     method: 'delete',
   })
@@ -78,12 +95,14 @@ export async function get(id: string): Promise<NotePublic> {
     contents,
     meta: JSON.parse(meta),
   } satisfies NotePublic
+
   if (note.meta.derivation) note.meta.derivation.salt = new Uint8Array(Object.values(note.meta.derivation.salt))
+
   return note
 }
 
-export async function info(id: string): Promise<NoteInfo> {
-  const data = await call({
+export async function info(id: string, api: API): Promise<NoteInfo> {
+  const data = await call(api, {
     url: `notes/${id}`,
     method: 'get',
   })
@@ -91,7 +110,9 @@ export async function info(id: string): Promise<NoteInfo> {
   const note = {
     meta: JSON.parse(meta),
   } satisfies NoteInfo
+
   if (note.meta.derivation) note.meta.derivation.salt = new Uint8Array(Object.values(note.meta.derivation.salt))
+
   return note
 }
 
@@ -101,16 +122,18 @@ export type Status = {
   max_views: number
   max_expiration: number
   allow_advanced: boolean
+  allow_files: boolean
   theme_image: string
   theme_text: string
   theme_favicon: string
   theme_page_title: string
 }
 
-export async function status() {
-  const data = await call({
+export async function status(api: API) {
+  const data = await call(api, {
     url: 'status/',
     method: 'get',
   })
+
   return data as Status
 }

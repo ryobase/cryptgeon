@@ -1,4 +1,4 @@
-import { status } from '@cryptgeon/shared'
+import { API, status } from '@cryptgeon/shared'
 import { exit as exitNode } from 'node:process'
 
 export function exit(message: string) {
@@ -11,7 +11,10 @@ export async function checkConstrains(constrains: { views?: number; minutes?: nu
   if (views && minutes) exit('cannot set view and minutes constrains simultaneously')
   if (!views && !minutes) constrains.views = 1
 
-  const response = await status()
+  const host = process.env['CRYPTGEON_SERVER'] || 'https://cryptgeon.org'
+  const api = new API(host, '')
+
+  const response = await status(api)
   if (views && views > response.max_views)
     exit(`Only a maximum of ${response.max_views} views allowed. ${views} given.`)
   if (minutes && minutes > response.max_expiration)

@@ -25,7 +25,7 @@ async fn main() -> std::io::Result<()> {
 
     if !store::can_reach_redis() {
         error!("cannot reach redis");
-        panic!("canont reach redis");
+        panic!("canont reach redis {}", store::REDIS_CLIENT.as_str());
     }
 
     return HttpServer::new(|| {

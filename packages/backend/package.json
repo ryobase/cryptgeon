@@ -2,9 +2,9 @@
   "private": true,
   "name": "@cryptgeon/backend",
   "scripts": {
-    "dev": "cargo watch -x 'run --bin cryptgeon'",
+    "dev": "VERBOSITY=debug SIZE_LIMIT=10MiB LISTEN_ADDR=0.0.0.0:1234 cargo watch -x 'run --bin cryptgeon'",
     "build": "cargo build --release",
-    "test:server": "SIZE_LIMIT=10MiB LISTEN_ADDR=0.0.0.0:1234 cargo run",
+    "test:server": "VERBOSITY=debug SIZE_LIMIT=10MiB cargo run",
     "test:prepare": "cargo build"
   }
 }

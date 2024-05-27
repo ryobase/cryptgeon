@@ -42,6 +42,11 @@ pub static ref THEME_NEW_NOTE_NOTICE: bool = std::env::var("THEME_NEW_NOTE_NOTIC
   .unwrap_or("true".to_string())
   .parse()
   .unwrap();
+pub static ref PREFIX_ROUTE: String = std::env::var("PREFIX_ROUTE")
+  .unwrap_or("".to_string())
+  .trim_matches('/')
+  .parse()
+  .unwrap();
 }
 
 // THEME

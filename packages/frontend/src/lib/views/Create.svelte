@@ -14,7 +14,8 @@
 	import Switch from '$lib/ui/Switch.svelte'
 	import TextArea from '$lib/ui/TextArea.svelte'
 	import type { FileDTO, Note } from '@cryptgeon/shared'
-	import { Adapters, PayloadToLargeError, create } from '@cryptgeon/shared'
+	import { API, Adapters, PayloadToLargeError, create } from '@cryptgeon/shared'
+	import { PUBLIC_PREFIX_ROUTE } from '$env/static/public'
 
 	let note: Note = {
 		contents: '',
@@ -57,6 +58,7 @@
 	async function submit() {
 		try {
 			loading = $t('common.encrypting')
+			const api = new API('', PUBLIC_PREFIX_ROUTE ?? '')
 
 			const derived = customPassword && (await AES.derive(customPassword))
 			const key = derived ? derived[0] : await AES.generateKey()
@@ -77,7 +79,7 @@
 			else data.views = parseInt(note.views as any)
 
 			loading = $t('common.uploading')
-			const response = await create(data)
+			const response = await create(data, api)
 			result = {
 				id: response.id,
 				password: customPassword ? undefined : Hex.encode(key),

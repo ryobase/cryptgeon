@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Argument, Option, program } from '@commander-js/extra-typings'
-import { setBase, status } from '@cryptgeon/shared'
+import { API, status } from '@cryptgeon/shared'
 import prettyBytes from 'pretty-bytes'
 
 import { download } from './download.js'
@@ -11,6 +11,7 @@ import { upload } from './upload.js'
 import { checkConstrains, exit } from './utils.js'
 
 const defaultServer = process.env['CRYPTGEON_SERVER'] || 'https://cryptgeon.org'
+const prefix = process.env['PREFIX_ROUTE'] || ''
 const server = new Option('-s --server <url>', 'the cryptgeon server to use').default(defaultServer)
 const files = new Argument('<file...>', 'Files to be sent').argParser(parseFile)
 const text = new Argument('<text>', 'Text content of the note')
@@ -33,8 +34,9 @@ program
   .description('show information about the server')
   .addOption(server)
   .action(async (options) => {
-    setBase(options.server)
-    const response = await status()
+    // setBase(options.server)
+    const api = new API(options.server, prefix)
+    const response = await status(api)
     const formatted = {
       ...response,
       max_size: prettyBytes(response.max_size),
@@ -54,11 +56,11 @@ send
   .addOption(minutes)
   .addOption(password)
   .action(async (files, options) => {
-    setBase(options.server!)
+    // setBase(options.server!)
     await checkConstrains(options)
     options.password ||= await getStdin()
     try {
-      const url = await upload(files, { views: options.views, expiration: options.minutes, password: options.password })
+      const url = await upload(files, { views: options.views, expiration: options.minutes, password: options.password, host: options.server! })
       console.log(`Note created:\n\n${url}`)
     } catch {
       exit('Could not create note')
@@ -72,11 +74,11 @@ send
   .addOption(minutes)
   .addOption(password)
   .action(async (text, options) => {
-    setBase(options.server!)
+    // setBase(options.server!)
     await checkConstrains(options)
     options.password ||= await getStdin()
     try {
-      const url = await upload(text, { views: options.views, expiration: options.minutes, password: options.password })
+      const url = await upload(text, { views: options.views, expiration: options.minutes, password: options.password, host: options.server! })
       console.log(`Note created:\n\n${url}`)
     } catch {
       exit('Could not create note')
